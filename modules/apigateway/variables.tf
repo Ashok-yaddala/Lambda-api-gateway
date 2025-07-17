@@ -10,3 +10,6 @@ variable "lambda_name"{
 variable "stage_name" { 
   type = string 
 }
+variable "region" { 
+  type = string 
+}
