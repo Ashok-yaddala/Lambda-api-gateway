@@ -1,2 +1,2 @@
 aws_region    = "ap-south-1"
-image_uri     = "<your_aws_account_id>.dkr.ecr.ap-south-1.amazonaws.com/hello-lambda:latest"
+image_uri     = "012889719104.dkr.ecr.ap-south-1.amazonaws.com/hello-lambda:20240717230000" 
