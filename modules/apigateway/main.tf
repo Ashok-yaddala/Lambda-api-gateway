@@ -38,6 +38,3 @@ resource "aws_lambda_permission" "apigw" {
   source_arn    = "${aws_api_gateway_rest_api.this.execution_arn}/*/*"
 }
 
-output "invoke_url" {
-  value = "${aws_api_gateway_rest_api.this.execution_arn}/${var.stage_name}/hello"
-}
