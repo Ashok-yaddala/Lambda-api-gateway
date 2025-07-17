@@ -4,6 +4,9 @@ resource "aws_lambda_function" "this" {
   image_uri     = var.image_uri
   role          = var.role_arn
   timeout       = 10
+  tracing_config {
+    mode = "Active"
+  }
 }
 
 
