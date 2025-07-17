@@ -4,6 +4,4 @@ variable "lambda_name" {
 variable "image_uri" { 
   type = string 
 }
-variable "role_arn" { 
-  type = string 
-}
+
