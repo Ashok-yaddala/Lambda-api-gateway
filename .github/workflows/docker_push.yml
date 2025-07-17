@@ -1,0 +1,71 @@
+name: Build, Push Docker & Deploy Terraform
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci-all.yml'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+
+    env:
+      AWS_REGION: ap-south-1
+      ECR_REPO: hello-lambda
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::012889719104:role/oidc_role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set variables for ECR
+        id: prep
+        run: |
+          ACCOUNT_ID=012889719104
+          IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+          ECR_URI="$ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}"
+          echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_URI=$ECR_URI:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_URI:$IMAGE_TAG ./app
+
+      - name: Push image to Amazon ECR
+        run: |
+          docker push $ECR_URI:$IMAGE_TAG
+
+      - name: Update terraform.tfvars with new image_uri
+        run: |
+          sed -i "s|^image_uri *=.*|image_uri = \"$ECR_URI:$IMAGE_TAG\"|g" terraform.tfvars
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init -reconfigure
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
