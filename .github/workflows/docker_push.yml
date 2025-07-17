@@ -47,23 +47,30 @@ jobs:
         id: prep
         run: |
           ACCOUNT_ID=012889719104
-          IMAGE_TAG=$(date +%Y%m%d%H%M%S)
-          ECR_URI="$ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}"
+          ECR_URI="$ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/hello-lambda"
           echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          echo "IMAGE_URI=$ECR_URI:$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+          echo "IMAGE_URI=$ECR_URI:latest" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
-          docker build -t $ECR_URI:$IMAGE_TAG ./app
-
+          docker build -t $ECR_URI:latest ./app
+      
       - name: Push image to Amazon ECR
         run: |
-          docker push $ECR_URI:$IMAGE_TAG
-
+          docker push $ECR_URI:latest
+      
       - name: Update terraform.tfvars with new image_uri
         run: |
-          sed -i "s|^image_uri *=.*|image_uri = \"$ECR_URI:$IMAGE_TAG\"|g" terraform.tfvars
+          sed -i "s|^image_uri *=.*|image_uri = \"$ECR_URI:latest\"|g" terraform.tfvars
+
+      - name: Delete all other tags except latest (optional)
+        run: |
+          ACCOUNT_ID=012889719104
+          REPO=hello-lambda
+          for digest in $(aws ecr list-images --repository-name $REPO --region ap-south-1 --query 'imageIds[?imageTag!=`latest`].imageDigest' --output text); do
+            aws ecr batch-delete-image --repository-name $REPO --region ap-south-1 --image-ids imageDigest=$digest
+          done
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
