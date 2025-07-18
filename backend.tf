@@ -5,5 +5,6 @@ terraform {
     bucket = "hcl-backend-mumbai"
     key    = "usecase7/terraform.tfstate"
     region = "ap-south-1"
+    use_lockfile = true
   }
 }
