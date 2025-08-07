@@ -47,7 +47,7 @@ jobs:
         id: prep
         run: |
           ACCOUNT_ID=136102212278
-          ECR_URI="$ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/hello-lambda"
+          ECR_URI="$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/hello-lambda"
           echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
           echo "IMAGE_TAG=latest" >> $GITHUB_ENV
           echo "IMAGE_URI=$ECR_URI:latest" >> $GITHUB_ENV
@@ -68,8 +68,8 @@ jobs:
         run: |
           ACCOUNT_ID=136102212278
           REPO=hello-lambda
-          for digest in $(aws ecr list-images --repository-name $REPO --region ap-south-1 --query 'imageIds[?imageTag!=`latest`].imageDigest' --output text); do
-            aws ecr batch-delete-image --repository-name $REPO --region ap-south-1 --image-ids imageDigest=$digest
+          for digest in $(aws ecr list-images --repository-name $REPO --region us-east-1 --query 'imageIds[?imageTag!=`latest`].imageDigest' --output text); do
+            aws ecr batch-delete-image --repository-name $REPO --region us-east-1 --image-ids imageDigest=$digest
           done
 
       - name: Set up Terraform
