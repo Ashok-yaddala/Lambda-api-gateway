@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     permissions:
       id-token: write
@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
 
     env:
-      AWS_REGION: ap-south-1
+      AWS_REGION: us-east-1
       ECR_REPO: hello-lambda
 
     steps:
@@ -29,14 +29,14 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::012889719104:role/oidc_role
+          role-to-assume: arn:aws:iam::136102212278:role/Githubactions-OIDC
           aws-region: ${{ env.AWS_REGION }}
       - name: Create ECR repository if not exists
         env:
-          AWS_REGION: ap-south-1
+          AWS_REGION: us-east-1
           ECR_REPO: hello-lambda
         run: |
-          ACCOUNT_ID=012889719104
+          ACCOUNT_ID=136102212278
           aws ecr describe-repositories --repository-names "$ECR_REPO" --region $AWS_REGION || \
           aws ecr create-repository --repository-name "$ECR_REPO" --region $AWS_REGION
       - name: Login to Amazon ECR
@@ -46,7 +46,7 @@ jobs:
       - name: Set variables for ECR
         id: prep
         run: |
-          ACCOUNT_ID=012889719104
+          ACCOUNT_ID=136102212278
           ECR_URI="$ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/hello-lambda"
           echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
           echo "IMAGE_TAG=latest" >> $GITHUB_ENV
@@ -66,7 +66,7 @@ jobs:
 
       - name: Delete all other tags except latest (optional)
         run: |
-          ACCOUNT_ID=012889719104
+          ACCOUNT_ID=136102212278
           REPO=hello-lambda
           for digest in $(aws ecr list-images --repository-name $REPO --region ap-south-1 --query 'imageIds[?imageTag!=`latest`].imageDigest' --output text); do
             aws ecr batch-delete-image --repository-name $REPO --region ap-south-1 --image-ids imageDigest=$digest
