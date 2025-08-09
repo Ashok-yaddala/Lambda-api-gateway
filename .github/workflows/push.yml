@@ -42,7 +42,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::136102212278:role/Githubactions-OIDC
-          aws-region: us-esat-1
+          aws-region: us-east-1
 
       - name: Verify identity
         run: aws sts get-caller-identity
